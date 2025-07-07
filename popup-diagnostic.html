@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion Todo - DIAGNOSTIC</title>
+    <style>
+        body {
+            width: 400px;
+            height: 500px;
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #667eea;
+            color: white;
+            box-sizing: border-box;
+        }
+        
+        .header {
+            background: #764ba2;
+            padding: 15px;
+            margin: -20px -20px 20px -20px;
+            text-align: center;
+        }
+        
+        .test-section {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        
+        button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .status {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 DIAGNOSTIC MODE</h1>
+        <div id="loadStatus">Loading...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>📋 Basic Tests</h3>
+        <button id="testButtonBtn">Test Button Click</button>
+        <button id="testConsoleBtn">Test Console</button>
+        <div id="testResults" class="status">Click buttons to test...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔗 Extension Tests</h3>
+        <button id="testStorageBtn">Test Chrome Storage</button>
+        <button id="testNotionAPIBtn">Test API Access</button>
+        <div id="extensionResults" class="status">Extension tests...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>📝 Simple Form Test</h3>
+        <input type="text" id="testInput" placeholder="Type something..." style="width: 100%; padding: 8px; margin: 5px 0; color: black;">
+        <button id="testFormBtn">Test Form</button>
+        <div id="formResults" class="status">Form test results...</div>
+    </div>
+
+    <script src="popup-diagnostic.js"></script>
+</body>
+</html>

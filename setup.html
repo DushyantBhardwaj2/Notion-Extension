@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion Extension Setup</title>
+    <style>
+        body {
+            width: 350px;
+            min-height: 400px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .setup-container {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .setup-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .setup-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .setup-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .setup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group textarea {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .form-group input::placeholder, .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .setup-btn {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .setup-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .setup-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .setup-status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .setup-status.success {
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+        }
+
+        .setup-status.error {
+            background: rgba(244, 67, 54, 0.3);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .help-text {
+            font-size: 12px;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .help-link {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .skip-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: underline;
+            margin-top: 10px;
+        }
+
+        .skip-btn:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-header">
+            <h1>🚀 Welcome to Notion Todo</h1>
+            <p>Let's connect to your Notion workspace</p>
+        </div>
+
+        <div class="setup-form">
+            <div class="form-group">
+                <label for="apiKey">Notion API Key</label>
+                <input type="password" id="apiKey" placeholder="secret_xxxxxxxxxxxxx">
+                <div class="help-text">
+                    Get your API key from <a href="https://www.notion.so/my-integrations" target="_blank" class="help-link">Notion Integrations</a>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="databaseId">Database ID</label>
+                <input type="text" id="databaseId" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                <div class="help-text">
+                    Copy the database ID from your Notion database URL
+                </div>
+            </div>
+
+            <button id="setupBtn" class="setup-btn">💾 Save & Continue</button>
+            
+            <button id="skipBtn" class="skip-btn">Skip (use default settings)</button>
+
+            <div id="setupStatus" class="setup-status" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="setup.js"></script>
+</body>
+</html>
