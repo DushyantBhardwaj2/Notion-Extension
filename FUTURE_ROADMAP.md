@@ -1,10 +1,22 @@
-# 🚀 Notion Todo Extension - Future Roadmap
+# 🚀 Notion Todo Extension - Comprehensive Enhancement Roadmap
 
-This document outlines planned enhancements and major features to be implemented in future versions of the Notion Todo Extension.
+## 🤖 AI-Driven Development Model
+
+**IMPORTANT: This extension is being developed entirely by an AI agent with human guidance.**
+
+- **AI Agent Role**: Handles all coding, implementation, testing, and technical decisions
+- **Human Role**: Provides strategic direction, feature priorities, and approval for major decisions
+- **Development Process**: Human provides high-level instructions → AI agent asks clarifying questions → AI implements complete solutions
+- **Quality Assurance**: AI agent handles debugging, optimization, and code quality
+- **Documentation**: AI agent maintains all technical documentation and implementation details
+
+---
+
+This document outlines the comprehensive multi-screen enhancement plan for the Notion Todo Extension, transforming it from a simple task creator into a professional productivity suite with calendar integration and advanced analytics.
 
 ## 🎯 Major Enhancement Goals
 
-### 1. 🔐 OAuth Authentication System
+### Phase 1: � OAuth Authentication System (Priority: IMMEDIATE)
 **Replace manual API-key entry with secure OAuth flow**
 
 **Current State:** Users manually paste API keys and database IDs

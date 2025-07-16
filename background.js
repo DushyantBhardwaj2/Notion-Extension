@@ -1,22 +1,8 @@
 // Notion Todo Extension - Service Worker
-// Connected to Database: 22856a75337c80c8a913e4130ca6dc0d
+// Modern OAuth-based implementation
 
-const API_KEY = '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';
-const DATABASE_ID = '22856a75337c80c8a913e4130ca6dc0d';
 const NOTION_API_BASE = 'https://api.notion.com/v1';
 const NOTION_VERSION = '2022-06-28';
-
-// Property mappings based on your database schema
-const PROPERTY_MAPPINGS = {
-    title: 'Task name',
-    status: 'Status',
-    assignee: 'Assignee',
-    dueDate: 'Due date',
-    priority: 'Priority',
-    taskType: 'Task type',
-    description: 'Description',
-    effortLevel: 'Effort level'
-};
 
 // Extension installation
 chrome.runtime.onInstalled.addListener((details) => {
@@ -30,7 +16,7 @@ chrome.runtime.onInstalled.addListener((details) => {
             contexts: ['selection', 'page']
         });
         
-        console.log('Extension connected to database:', DATABASE_ID);
+        console.log('Extension ready - OAuth authentication required');
     }
 });
 
@@ -40,7 +26,16 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         const selectedText = info.selectionText || tab.title || 'New Task';
         
         try {
-            await addQuickTask(selectedText, tab.url);
+            // Check if user is authenticated
+            const authData = await getStoredAuth();
+            
+            if (!authData || !authData.authenticated) {
+                // Open popup for authentication
+                chrome.action.openPopup();
+                return;
+            }
+            
+            await addQuickTask(selectedText, tab.url, authData);
             
             // Show notification
             chrome.notifications.create({
@@ -63,29 +58,58 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     }
 });
 
-// Quick task addition function
-async function addQuickTask(title, sourceUrl = null) {
+// Get stored authentication data
+async function getStoredAuth() {
+    const result = await chrome.storage.sync.get([
+        'notionAccessToken', 'notionDatabaseId', 'authenticated', 'authMethod'
+    ]);
+    
+    if (result.authenticated && result.authMethod === 'oauth' && result.notionAccessToken) {
+        return {
+            accessToken: result.notionAccessToken,
+            databaseId: result.notionDatabaseId,
+            authenticated: true
+        };
+    }
+    return null;
+}
+
+// Quick task addition function with OAuth
+async function addQuickTask(title, sourceUrl = null, authData) {
+    if (!authData || !authData.databaseId) {
+        throw new Error('No database configured. Please set up through the extension popup.');
+    }
+
     const taskData = {
-        parent: { database_id: DATABASE_ID },
+        parent: { database_id: authData.databaseId },
         properties: {
-            [PROPERTY_MAPPINGS.title]: {
+            "Task": {
                 title: [{ text: { content: title } }]
             },
-            [PROPERTY_MAPPINGS.status]: {
-                select: { name: 'Not started' }
+            "Status": {
+                select: { name: "📋 Not Started" }
             },
-            [PROPERTY_MAPPINGS.priority]: {
-                select: { name: 'Medium' }
+            "Priority": {
+                select: { name: "📊 Medium" }
+            },
+            "Category": {
+                select: { name: "💼 Work" }
+            },
+            "Context": {
+                select: { name: "💻 Computer" }
+            },
+            "Energy": {
+                select: { name: "🪫 Low Energy" }
             }
         }
     };
 
     // Add description with source URL if available
     if (sourceUrl) {
-        taskData.properties[PROPERTY_MAPPINGS.description] = {
+        taskData.properties["Description"] = {
             rich_text: [
                 {
-                    text: { content: `Added from: ${sourceUrl}` }
+                    text: { content: `Added from browser: ${sourceUrl}` }
                 }
             ]
         };
@@ -94,7 +118,7 @@ async function addQuickTask(title, sourceUrl = null) {
     const response = await fetch(`${NOTION_API_BASE}/pages`, {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${API_KEY}`,
+            'Authorization': `Bearer ${authData.accessToken}`,
             'Notion-Version': NOTION_VERSION,
             'Content-Type': 'application/json'
         },
@@ -112,39 +136,55 @@ async function addQuickTask(title, sourceUrl = null) {
 // Handle messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'addTask') {
-        addQuickTask(request.title, request.url)
-            .then(result => {
+        (async () => {
+            try {
+                const authData = await getStoredAuth();
+                if (!authData) {
+                    throw new Error('Authentication required. Please sign in through the extension popup.');
+                }
+                
+                const result = await addQuickTask(request.title, request.url, authData);
                 sendResponse({ success: true, data: result });
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error adding task:', error);
                 sendResponse({ success: false, error: error.message });
-            });
+            }
+        })();
         
         return true; // Keep message channel open for async response
     }
     
     if (request.action === 'getTaskStats') {
-        getTaskStats()
-            .then(stats => {
+        (async () => {
+            try {
+                const authData = await getStoredAuth();
+                if (!authData) {
+                    throw new Error('Authentication required. Please sign in through the extension popup.');
+                }
+                
+                const stats = await getTaskStats(authData);
                 sendResponse({ success: true, data: stats });
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error getting stats:', error);
                 sendResponse({ success: false, error: error.message });
-            });
+            }
+        })();
         
         return true;
     }
 });
 
-// Get task statistics
-async function getTaskStats() {
+// Get task statistics with OAuth
+async function getTaskStats(authData) {
+    if (!authData || !authData.databaseId) {
+        throw new Error('No database configured');
+    }
+
     try {
-        const response = await fetch(`${NOTION_API_BASE}/databases/${DATABASE_ID}/query`, {
+        const response = await fetch(`${NOTION_API_BASE}/databases/${authData.databaseId}/query`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${API_KEY}`,
+                'Authorization': `Bearer ${authData.accessToken}`,
                 'Notion-Version': NOTION_VERSION,
                 'Content-Type': 'application/json'
             },
@@ -160,13 +200,13 @@ async function getTaskStats() {
         const data = await response.json();
         const tasks = data.results;
 
-        // Calculate statistics
+        // Calculate statistics using new property names
         const stats = {
             total: tasks.length,
             notStarted: 0,
             inProgress: 0,
-            done: 0,
-            blocked: 0,
+            completed: 0,
+            onHold: 0,
             overdue: 0
         };
 
@@ -174,27 +214,22 @@ async function getTaskStats() {
         today.setHours(0, 0, 0, 0);
 
         tasks.forEach(task => {
-            const status = task.properties[PROPERTY_MAPPINGS.status]?.select?.name || 'Not started';
-            const dueDate = task.properties[PROPERTY_MAPPINGS.dueDate]?.date?.start;
+            const status = task.properties.Status?.select?.name || '📋 Not Started';
+            const dueDate = task.properties['Due Date']?.date?.start;
 
-            // Count by status
-            switch (status) {
-                case 'Not started':
-                    stats.notStarted++;
-                    break;
-                case 'In progress':
-                    stats.inProgress++;
-                    break;
-                case 'Done':
-                    stats.done++;
-                    break;
-                case 'Blocked':
-                    stats.blocked++;
-                    break;
+            // Count by status using new status names
+            if (status.includes('Not Started')) {
+                stats.notStarted++;
+            } else if (status.includes('In Progress')) {
+                stats.inProgress++;
+            } else if (status.includes('Completed')) {
+                stats.completed++;
+            } else if (status.includes('On Hold')) {
+                stats.onHold++;
             }
 
-            // Check for overdue
-            if (dueDate && status !== 'Done') {
+            // Check for overdue (not completed tasks past due date)
+            if (dueDate && !status.includes('Completed')) {
                 const taskDueDate = new Date(dueDate);
                 if (taskDueDate < today) {
                     stats.overdue++;
@@ -216,7 +251,16 @@ chrome.alarms.create('syncTasks', { periodInMinutes: 15 });
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === 'syncTasks') {
         try {
-            const stats = await getTaskStats();
+            const authData = await getStoredAuth();
+            
+            if (!authData) {
+                // User not authenticated, clear badge
+                chrome.action.setBadgeText({ text: '' });
+                chrome.action.setTitle({ title: 'Notion Todo Extension - Sign in required' });
+                return;
+            }
+            
+            const stats = await getTaskStats(authData);
             
             // Update badge with overdue count
             if (stats.overdue > 0) {
@@ -230,6 +274,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
             
         } catch (error) {
             console.error('Sync failed:', error);
+            // Clear badge on error
+            chrome.action.setBadgeText({ text: '' });
         }
     }
 });
@@ -238,7 +284,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 chrome.runtime.onStartup.addListener(() => {
     console.log('Notion Todo Extension started');
 });
-
 // Clean up on extension uninstall
 chrome.runtime.onSuspend.addListener(() => {
     console.log('Notion Todo Extension suspended');

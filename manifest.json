@@ -7,16 +7,19 @@
         "storage",
         "contextMenus",
         "notifications",
-        "alarms"
+        "alarms",
+        "tabs",
+        "identity"
     ],
     "host_permissions": [
-        "https://api.notion.com/*"
+        "https://api.notion.com/*",
+        "https://oauth2.googleapis.com/*"
     ],
     "background": {
         "service_worker": "background.js"
     },
     "action": {
-        "default_popup": "popup-simple.html",
+        "default_popup": "popup-clean.html",
         "default_title": "Notion Todo",
         "default_icon": {
             "16": "icons/icon16.png",
